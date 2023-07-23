@@ -7,9 +7,10 @@ import (
 	"os/exec"
 )
 
-func Plan(out bool) error {
+func Plan(opts TerraformPlanOpts) error {
 	cmd := exec.Command("terraform", "plan")
-	if out {cmd.Args = append(cmd.Args, "-out=tfplan")}
+	if opts.output != "" {cmd.Args = append(cmd.Args, fmt.Sprintf("-out=%s", opts.output))}
+	if opts.Vars != nil {cmd.Args = CreateVarArgs(*opts.Vars)}
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Start()
 
@@ -26,8 +27,9 @@ func Plan(out bool) error {
 	return nil
 }
 
-func Apply() error {
+func Apply(opts TerraformApplyOpts) error {
 	cmd := exec.Command("terraform", "apply", "-auto-approve")
+	if opts.Vars != nil {cmd.Args = CreateVarArgs(*opts.Vars)}
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Start()
 
@@ -62,14 +64,14 @@ func Init() error {
 	return nil
 }
 
-func InitApply(){
+func InitApply(opts TerraformApplyOpts) {
 	Init()
-	Apply()
+	Apply(opts)
 }
 
-func InitPlan(out bool){
+func InitPlan(opts TerraformPlanOpts) {
 	Init()
-	Plan(out)
+	Plan(opts)
 }
 
 func GetWorkspace() error {
@@ -135,19 +137,16 @@ func DeleteWorkspace(name string){
 	}
 }
 
-func PullWorkspaceState(){
-	cmd := exec.Command("terraform","state","pull")
-	stdout, _ := cmd.StdoutPipe()
+func PullWorkspaceState(name string) error{
+	cmd := exec.Command("terraform","state","pull",">",name)
 	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
 
 	err := cmd.Wait();if err != nil {
 		log.Print(err)
+		return err
 	}
+	fmt.Println(cmd.Stdout)
+	return nil
 }
 
 func PushWorkspaceState(name string){

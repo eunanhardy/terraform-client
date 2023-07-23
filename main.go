@@ -6,5 +6,7 @@ import (
 
 
 func main() {
-	client.InitPlan(false)
+	err := client.PullWorkspaceState("backup.state.tfstate");if err != nil {
+		panic(err)
+	}
 }
