@@ -6,5 +6,5 @@ type TerraformApplyOpts struct {
 
 type TerraformPlanOpts struct {
 	Vars   *[]string
-	output string
+	Output string
 }

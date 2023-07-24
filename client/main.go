@@ -1,25 +1,16 @@
 package client
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os/exec"
 )
 
 func Plan(opts TerraformPlanOpts) error {
-	cmd := exec.Command("terraform", "plan")
-	if opts.output != "" {cmd.Args = append(cmd.Args, fmt.Sprintf("-out=%s", opts.output))}
-	if opts.Vars != nil {cmd.Args = CreateVarArgs(*opts.Vars)}
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "plan"}
+	if opts.Output != "" {cmd = append(cmd, fmt.Sprintf("-out=%s", opts.Output))}
+	if opts.Vars != nil {cmd = CreateVarArgs(*opts.Vars)}
+	fmt.Println(cmd)
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 		return err
 	}
@@ -28,17 +19,9 @@ func Plan(opts TerraformPlanOpts) error {
 }
 
 func Apply(opts TerraformApplyOpts) error {
-	cmd := exec.Command("terraform", "apply", "-auto-approve")
-	if opts.Vars != nil {cmd.Args = CreateVarArgs(*opts.Vars)}
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "apply", "-auto-approve"}
+	if opts.Vars != nil {cmd = append(CreateVarArgs(*opts.Vars))}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 		return err
 	}
@@ -47,20 +30,10 @@ func Apply(opts TerraformApplyOpts) error {
 }
 
 func Init() error {
-	cmd := exec.Command("terraform", "init")
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
-		log.Print(err)
+	cmd := []string{"terraform", "init"}
+	err := RunCommand(cmd...);if err != nil {
 		return err
 	}
-	
 	return nil
 }
 
@@ -70,133 +43,78 @@ func InitApply(opts TerraformApplyOpts) {
 }
 
 func InitPlan(opts TerraformPlanOpts) {
-	Init()
-	Plan(opts)
+	err := Init();if err != nil {
+		log.Print(err)
+	}
+	go Plan(opts)
 }
 
-func GetWorkspace() error {
-	cmd := exec.Command("terraform", "workspace", "show")
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+func GetWorkspace() (string,error) {
+	cmd := []string{"terraform", "workspace","show"}
+	stdout ,err := RunCommandWithOutput(cmd...);if err != nil {
 		log.Print(err)
-		return err
+		return "",err
 	}
-	
-	return nil
+
+	return stdout, nil
 }
 
 func SelectWorkspace(name string){
-	cmd := exec.Command("terraform", "workspace", "select", name)
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "workspace","select",name}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 	}
 }
 
 func CreateWorkspace(name string){
-	cmd := exec.Command("terraform", "workspace", "new", name)
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "workspace","new",name}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 	}
 }
 
 func DeleteWorkspace(name string){
-	cmd := exec.Command("terraform", "workspace", "delete", name)
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "workspace","delete",name}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 	}
 }
 
 func PullWorkspaceState(name string) error{
-	cmd := exec.Command("terraform","state","pull",">",name)
-	cmd.Start()
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "state","pull",">",name}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 		return err
 	}
-	fmt.Println(cmd.Stdout)
+
 	return nil
 }
 
 func PushWorkspaceState(name string){
-	cmd := exec.Command("terraform","state","push",name)
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "state","push",name}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 	}
+
 }
 
-func ShowJSON() error {
-	cmd := exec.Command("terraform", "show", "-json")
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+func ShowJSON() (string,error) {
+	cmd := []string{"terraform", "show","-json"}
+	stdout,err := RunCommandWithOutput(cmd...);if err != nil {
 		log.Print(err)
-		return err
+		return "",err
 	}
-	
-	return nil
+
+	return stdout,nil
 }
 
 func Format(recursive bool) error {
-	cmd := exec.Command("terraform", "fmt")
-	if recursive {cmd.Args = append(cmd.Args, "--recursive")}
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-
-	err := cmd.Wait();if err != nil {
+	cmd := []string{"terraform", "fmt"}
+	if recursive {cmd = append(cmd, "--recursive")}
+	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 		return err
 	}
-	
+
 	return nil
 }
