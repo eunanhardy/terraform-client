@@ -1,5 +1,10 @@
 ## Terraform cli client For GO
 This is a lightweight wrapper around the terraform cli and makes it easy to run terraform commands from within a go application. It is intended to be used in a CI/CD pipeline to run terraform commands and parse the output.
+### How to Install
+```
+go get github.com/eunanhardy/terraform-client
+```
+
 ### Usage
 ```go
 package main
