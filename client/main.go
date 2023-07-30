@@ -56,6 +56,14 @@ func SelectWorkspace(name string){
 	}
 }
 
+func SelectOrNewWorkspace(name string){
+	cmd := []string{"terraform", "workspace","select",name}
+	err := RunCommand(cmd...);if err != nil {
+		log.Print(err)
+		CreateWorkspace(name)
+	}
+}
+
 func CreateWorkspace(name string){
 	cmd := []string{"terraform", "workspace","new",name}
 	err := RunCommand(cmd...);if err != nil {

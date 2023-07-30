@@ -2,6 +2,7 @@ package client
 
 type TerraformApplyOpts struct {
 	Vars *[]string
+	Format string
 }
 
 type TerraformPlanOpts struct {
