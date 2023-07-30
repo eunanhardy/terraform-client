@@ -1,12 +1,9 @@
 package main
 
 import (
-	"github.com/eunanhardy/terraform-client/client"
+	"fmt"
 )
 
 func main() {
-	err := client.PullWorkspaceState("backup.state.tfstate")
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println("Terraform Client for Go v1")
 }
