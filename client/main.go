@@ -108,6 +108,16 @@ func ShowJSON() (string,error) {
 	return stdout,nil
 }
 
+func Output(name string) (string,error) {
+	cmd := []string{"terraform", "output",name}
+	stdout,err := RunCommandWithOutput(cmd...);if err != nil {
+		log.Print(err)
+		return "",err
+	}
+
+	return stdout,nil
+}
+
 func Format(recursive bool) error {
 	cmd := []string{"terraform", "fmt"}
 	if recursive {cmd = append(cmd, "--recursive")}
