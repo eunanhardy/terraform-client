@@ -1,4 +1,4 @@
-## Terraform-client For GO
+## Terraform cli client For GO
 This is a lightweight wrapper around the terraform cli and makes it easy to run terraform commands from within a go application. It is intended to be used in a CI/CD pipeline to run terraform commands and parse the output.
 ### Usage
 ```go
