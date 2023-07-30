@@ -8,6 +8,7 @@ import (
 func Plan(opts TerraformPlanOpts) error {
 	cmd := []string{"terraform", "plan"}
 	if opts.Output != "" {cmd = append(cmd, fmt.Sprintf("-out=%s", opts.Output))}
+	if opts.Format == "json" || opts.Output == "raw" {cmd = append(cmd, fmt.Sprintf("-%s", opts.Format))}
 	if opts.Vars != nil {cmd = CreateVarArgs(*opts.Vars)}
 	fmt.Println(cmd)
 	err := RunCommand(cmd...);if err != nil {
@@ -19,8 +20,9 @@ func Plan(opts TerraformPlanOpts) error {
 }
 
 func Apply(opts TerraformApplyOpts) error {
-	cmd := []string{"terraform", "apply", "-auto-approve"}
+	cmd := []string{"terraform", "apply", "-auto-approve", "-input=false"}
 	if opts.Vars != nil {cmd = append(CreateVarArgs(*opts.Vars))}
+	if opts.Format == "json" {cmd = append(cmd, fmt.Sprintf("-%s", opts.Format))}
 	err := RunCommand(cmd...);if err != nil {
 		log.Print(err)
 		return err
