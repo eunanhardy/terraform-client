@@ -37,18 +37,6 @@ func Init() error {
 	return nil
 }
 
-func InitApply(opts TerraformApplyOpts) {
-	Init()
-	Apply(opts)
-}
-
-func InitPlan(opts TerraformPlanOpts) {
-	err := Init();if err != nil {
-		log.Print(err)
-	}
-	go Plan(opts)
-}
-
 func GetWorkspace() (string,error) {
 	cmd := []string{"terraform", "workspace","show"}
 	stdout ,err := RunCommandWithOutput(cmd...);if err != nil {
